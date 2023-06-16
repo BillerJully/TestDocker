@@ -1,0 +1,40 @@
+version: '3'
+
+networks:
+  backend-db:
+    driver: bridge
+
+services:
+  backend:
+    build: .
+    volumes:
+      - .:/testing
+    ports:
+      - '8000:8000'
+    networks:
+      - backend-db
+    command: >
+      sh -c "python testing/manage.py makemigrations
+            python testing/manage.py migrate
+            python testing/manage.py runserver 0.0.0.0:8000"
+    depends_on:
+      - pg-db
+
+  pg-db:
+    image: postgres:14.8
+    restart: always
+    environment:
+      POSTGRES_DB: "TEST"
+      POSTGRES_PASSWORD: "Qwert123!"
+      POSTGRES_USER: "TestUser"
+    ports:
+      - '5432:5432'
+    networks:
+      - backend-db
+    volumes:
+      - pg-db:/var/lib/postgresql
+
+volumes:
+  pg-db:
+
+    
